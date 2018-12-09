@@ -1,32 +1,96 @@
 defmodule Disco.Query do
   @moduledoc """
-  Helper macro and behaviour to define a query.
+  The query specification.
 
-  It can be `use`d as a macro to quickly implement the required functions for the behaviour,
-  otherwise they must be implemented explicitly.
+  A query in `Disco` is a struct which has the fields representing potential parameters
+  for the query itself.
+
+  This module defines a behaviour with a set of default callback implementations to execute
+  a query on an aggregate.
+
+  ## Define a query
+
+  Here's how to implement a simple query without params:
+  ```
+  defmodule MyApp.QuerySimple do
+    use Disco.Query
+
+    def run(%__MODULE__{} = _query), do: "result"
+  end
+  ```
+
+  However, you might need some params:
+  ```
+  defmodule MyApp.QueryWithParams do
+    use Disco.Query, foo: nil
+
+    def run(%__MODULE__{} = query), do: query.foo
+  end
+  ```
+
+  It's also possible to apply validations on the params. Refer to [Vex](https://github.com/CargoSense/vex) for more details.
+  ```
+  defmodule MyApp.QueryWithValidations do
+    use Disco.Query, foo: nil, bar: nil
+
+    # param `foo` is required, `bar` isnt.
+    validates(:foo, presence: true)
+
+    def run(%__MODULE__{} = query), do: query.foo
+  end
+  ```
+
+  ## Overriding default functions
+
+  As you can see, the simplest implementation only requires to implement `run/1` callback,
+  while the others are already implemented by default. Sometimes you might need a custom
+  initialization or validation function, that's why it's possible to override `new/1` and
+  `validate/1`.
+
+  ## Examples
+
+  ```
+  iex> alias Disco.Factories.ExampleQuery, as: Query
+  iex> Query.new(%{foo: "bar"}) == %Query{foo: "bar"}
+  true
+  iex> Query.new(%{foo: "bar"}) |> Query.validate()
+  {:ok, %Query{foo: "bar"}}
+  iex> Query.new() |> Query.validate()
+  {:error, %{foo: ["must be present"]}}
+  iex> Query.run(%Query{foo: "bar"})
+  %{foo: "bar"}
+  ```
   """
 
   @type error :: {:error, %{atom() => [binary()]} | binary()}
 
+  @typedoc """
+  Result of the query, it might be anything.
+  """
+  @type result :: any()
+
   @doc """
   Called to initialize a query.
   """
-  @callback new(query :: map()) :: map()
+  @callback new(params :: map()) :: map()
 
   @doc """
   Called to validate the query.
   """
-  @callback validate(query :: map()) :: {:ok, map()} | error
+  @callback validate(query :: map()) :: {:ok, map()} | error()
 
   @doc """
   Called to run the query.
   """
-  @callback run(query :: map() | error) :: any() | [any()]
+  @callback run(query :: map() | error()) :: result()
 
   @doc """
   Called to init, validate and run the query all at once.
+
+  This function is particularly useful when you don't want to call `new/1`, `validate/1` and
+  `run/1` manually.
   """
-  @callback execute(map()) :: any()
+  @callback execute(params :: map()) :: result()
 
   defmacro __using__(attrs) do
     quote do
@@ -38,9 +102,15 @@ defmodule Disco.Query do
       use ExConstructor, :init
       use Vex.Struct
 
-      @spec new(query :: map()) :: map()
-      def new(%{} = attrs), do: init(attrs)
+      @doc """
+      Initializes a query.
+      """
+      @spec new(params :: map()) :: map()
+      def new(%{} = params \\ %{}), do: init(params)
 
+      @doc """
+      Validates an initialized query.
+      """
       @spec validate(query :: map()) :: {:ok, map()} | Disco.Query.error()
       def validate(%__MODULE__{} = query) do
         case Vex.validate(query) do
@@ -52,9 +122,9 @@ defmodule Disco.Query do
       @doc """
       Inits, validates and runs the query all at once.
       """
-      @spec execute(attrs :: map()) :: any()
-      def execute(attrs) do
-        with %__MODULE__{} = cmd_struct <- new(attrs),
+      @spec execute(params :: map()) :: any()
+      def execute(%{} = params \\ %{}) do
+        with %__MODULE__{} = cmd_struct <- new(params),
              {:ok, cmd} <- validate(cmd_struct) do
           run(cmd)
         else

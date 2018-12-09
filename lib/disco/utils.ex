@@ -1,20 +1,23 @@
 defmodule Disco.Utils do
-  @moduledoc """
-  Shared helpers.
-  """
+  @moduledoc false
+  # This module collects some useful shared helpers.
 
   @doc """
-  Removes nil values from a map or struct.
+  Removes `nil` values from a map or struct.
+
+  ## Options
+    * `:except` - a list of keys to not purge.
 
   ## Examples
 
-    iex> Disco.Utils.map_reject_nil_values(%{foo: "bar", baz: nil})
-    %{foo: "bar"}
-    iex> opts = [except: [:baz]]
-    iex> Disco.Utils.map_reject_nil_values(%{foo: "bar", baz: nil}, opts)
-    %{foo: "bar", baz: nil}
+      iex> Disco.Utils.map_reject_nil_values(%{foo: "bar", baz: nil})
+      %{foo: "bar"}
+      iex> opts = [except: [:baz]]
+      iex> Disco.Utils.map_reject_nil_values(%{foo: "bar", baz: nil}, opts)
+      %{foo: "bar", baz: nil}
 
   """
+  @spec map_reject_nil_values(data :: map(), opts :: Keyword.t()) :: map()
   def map_reject_nil_values(data, opts \\ [])
 
   def map_reject_nil_values(%_{} = struct, opts) do

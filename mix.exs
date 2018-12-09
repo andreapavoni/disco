@@ -12,6 +12,13 @@ defmodule Disco.MixProject do
       deps: deps(),
       aliases: aliases(),
       elixirc_paths: elixirc_paths(Mix.env()),
+      # docs
+      name: "Disco",
+      source_url: "https://github.com/andreapavoni/disco",
+      homepage_url: "https://github.com/andreapavoni/disco",
+      docs: docs(),
+
+      # dev/test
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         coveralls: :test,
@@ -68,7 +75,7 @@ defmodule Disco.MixProject do
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
 
       # docs
-      {:ex_doc, "~> 0.18.1", only: [:dev], runtime: false}
+      {:ex_doc, "~> 0.19", only: [:dev], runtime: false}
     ]
   end
 
@@ -77,6 +84,14 @@ defmodule Disco.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate", "test"]
+    ]
+  end
+
+  defp docs() do
+    [
+      # The main page in the docs
+      main: "Disco",
+      extras: ["README.md"]
     ]
   end
 end

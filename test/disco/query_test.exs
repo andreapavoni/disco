@@ -1,5 +1,6 @@
 defmodule Disco.QueryTest do
   use Disco.DataCase, async: false
+  doctest Disco.Query
 
   alias Disco.Factories.ExampleQuery, as: Query
 

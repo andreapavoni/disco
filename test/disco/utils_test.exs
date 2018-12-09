@@ -1,5 +1,5 @@
 defmodule Disco.UtilsTest do
   use ExUnit.Case
 
-  doctest(Disco.Utils)
+  doctest Disco.Utils
 end
