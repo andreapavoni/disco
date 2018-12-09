@@ -19,7 +19,7 @@ defmodule Disco.Query do
   end
   ```
 
-  However, you might need some params:
+  If you might need some params:
   ```
   defmodule MyApp.QueryWithParams do
     use Disco.Query, foo: nil
@@ -33,7 +33,7 @@ defmodule Disco.Query do
   defmodule MyApp.QueryWithValidations do
     use Disco.Query, foo: nil, bar: nil
 
-    # param `foo` is required, `bar` isnt.
+    # param `foo` is required, `bar` isn't.
     validates(:foo, presence: true)
 
     def run(%__MODULE__{} = query), do: query.foo
@@ -94,6 +94,12 @@ defmodule Disco.Query do
   """
   @callback execute(params :: map()) :: result()
 
+  @doc """
+  Defines the struct fields and the default callbacks to implement the behaviour to run a query.
+
+  ## Options
+  The only argument accepted is a Keyword list of fields for the query struct.
+  """
   defmacro __using__(attrs) do
     quote do
       @behaviour Disco.Query
