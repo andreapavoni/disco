@@ -1,33 +1,106 @@
 defmodule Disco.Aggregate do
   @moduledoc """
-  Aggregate macro and behaviour.
+  The aggregate specification.
+
+  An aggregate in `Disco` is a struct which has the fields representing the state of itself.
+
+  This module defines a behaviour with a set of default callback implementations to execute
+  a command or a query on the aggregate.
+
+  ## Define an aggregate
+
+  Here's how to implement a simple aggregate:
+  ```
+  defmodule MyApp.Aggregate do
+    defstruct id: nil, foo: nil
+
+    use Disco.Aggregate,
+      routes: %{
+        commands: %{
+          do_something: MyApp.Commands.DoSomething
+        },
+        queries: %{
+          find_something: MyApp.Commands.FindSomething
+        }
+      },
+      event_store_client: MyApp.EventStoreClient
+
+    def apply_event(%{type: "SomethingDone"} = event, state) do
+      %{state | foo: event.foo, id: event.aggregate_id}
+    end
+  end
+  ```
+
+  #### NOTE
+  It is very important to _always_ specify an `id` field in the aggregate struct.
+  Every aggregate needs it to be uniquely identified.
+
+  ## Overriding default functions
+
+  The simplest implementation only requires to implement `apply_event/2` callback,
+  while the others are already implemented by default. Sometimes you might need a custom
+  implementation of the callbacks, that's why it's possible to easily override them.
+
+  ## Usage example
+
+  _NOTE: `Disco.Factories.ExampleAggregate` has been defined in `test/support/examples/example_aggregate.ex`._
+
+  ```
+  iex> alias Disco.Factories.ExampleAggregate, as: Aggregate
+  iex> Aggregate.commands()
+  [:do_something]
+  iex> Aggregate.routes()
+  [:find_something]
+  iex> Aggregate.dispatch(:do_something, %{foo: "bar"})
+  {:ok, %Disco.Factories.ExampleAggregate{
+    foo: "bar",
+    id: "4fd98a9e-8d6f-4e35-a8fc-aca5544596cb"
+  }}
+  iex> Aggregate.query(:find_something, %{foo: "bar"})
+  %{foo: "bar"}
+  ```
   """
+
+  @typedoc """
+  Represents the state of an aggregate.
+  """
+  @type state :: map()
 
   @doc """
   Called to get the current aggregate state.
   """
-  @callback current_state(id :: any()) :: any()
+  @callback current_state(id :: any()) :: state()
 
   @doc """
-  Called to broadcast events to event store.
+  Called to send emitted events to `Disco.EventStore`.
   """
-  @callback commit(list()) :: :ok
+  @callback commit(events :: list()) :: :ok
 
   @doc """
   Called to process a list events to update the state.
   """
-  @callback process(list(), map()) :: {:ok, map()}
+  @callback process(events :: list(), state()) :: {:ok, state()}
 
   @doc """
   Called to run a given command and to emit the event(s). Returns updated state.
   """
-  @callback handle(command :: map(), aggregate_id :: binary() | nil) :: {:ok, map()}
+  @callback handle(command :: map(), aggregate_id :: binary() | nil) :: {:ok, state()}
 
   @doc """
   Called to apply an event to update the state.
   """
-  @callback apply_event(map(), map()) :: map()
+  @callback apply_event(event :: map(), state()) :: state()
 
+  @doc """
+  Defines the default callbacks to implement the behaviour, the routes to commands and queries,
+  sets the client to communicate with the `Disco.EventStore`.
+
+  ## Options
+    * `:routes` - a map with `:commands` and `:queries` as keys, and a map with
+      `query_name: query_module` pairs, as value.
+    * `:event_store_client` - a module that implements `Disco.EventStore.Client` behaviour.
+
+  """
   defmacro __using__(opts \\ []) do
     routes = Keyword.get(opts, :routes)
     event_store_client = Keyword.get(opts, :event_store_client)

@@ -92,8 +92,9 @@ Meanwhile you can check the source code and tests.
 
 ## TODO
 
-* [ ] improve docs details
-* [ ] consolidate API
+* [ ] improve overall documentation
+* [ ] consolidate API (mostly based on feedback, if any)
+* [ ] adopt an adapter-based approach for event store database
 * [ ] add example app
 
 ## Contributing

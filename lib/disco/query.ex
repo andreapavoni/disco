@@ -47,7 +47,9 @@ defmodule Disco.Query do
   initialization or validation function, that's why it's possible to override `new/1` and
   `validate/1`.
 
-  ## Examples
+  ## Usage example
+
+  _NOTE: `Disco.Factories.ExampleQuery` has been defined in `test/support/examples/example_query.ex`._
 
   ```
   iex> alias Disco.Factories.ExampleQuery, as: Query
