@@ -16,7 +16,9 @@ defmodule Disco do
 
   `Disco.Aggregate` is the main interface to interact with an aggregate. It exposes the
   necessary functionalities to dispatch a `Disco.Command` that emits a set of events and
-  process them to update the aggregate state.
+  process them to update the aggregate state. Later, the aggregate can be used to run a
+  `Disco.Query` to retrieve data from some source of data, ideally the one where you wrote
+  using a `Disco.EventConsumer` event processor.
 
   `Disco.Orchestrator` acts like the `Disco.Aggregate` in terms of commands and queries
   functionalities, except that it groups multiple aggregates under the same module. It
