@@ -1,7 +1,5 @@
-defmodule Disco.Data.Event do
-  @moduledoc """
-  Database rapresentation for an event.
-  """
+defmodule Disco.EventStore.Data.Event do
+  @moduledoc false
 
   use Ecto.Schema
 

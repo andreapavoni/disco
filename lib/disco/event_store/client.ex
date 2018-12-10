@@ -1,6 +1,18 @@
 defmodule Disco.EventStore.Client do
   @moduledoc """
-  Macro and behaviour to interact with event store from external apps.
+  The `Disco.EventStore.Client` specification.
+
+  A client is used to interact with `Disco.EventStore` while keeping details isolated.
+
+  Like other components in `Disco`, even the `Disco.EventStore.Client` is built as a
+  behaviour that implements default callbacks. This means that the simplest definition of
+  a client can be achieved like the following:
+
+  ```
+  defmodule MyApp.EventStoreClient do
+    use Disco.EventStore.Client
+  end
+  ```
   """
 
   @doc """
@@ -43,7 +55,7 @@ defmodule Disco.EventStore.Client do
       @doc """
       Emits an event.
       """
-      @spec emit(map()) :: {:ok, event :: map()}
+      @spec emit(event :: map()) :: {:ok, event :: map()}
       def emit(%{} = event), do: EventStore.emit(event)
 
       @doc """

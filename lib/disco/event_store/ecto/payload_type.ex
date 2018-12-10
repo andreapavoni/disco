@@ -1,7 +1,5 @@
 defmodule Disco.EventStore.Ecto.PayloadType do
-  @moduledoc """
-  Defines a custom `Ecto.Type` to handle erlang term serialization on database.
-  """
+  @moduledoc false
 
   @behaviour Ecto.Type
 

@@ -4,7 +4,7 @@ defmodule Disco.Factory do
   """
   use ExMachina.Ecto, repo: Disco.Repo
 
-  alias Disco.Data.Event
+  alias Disco.EventStore.Data.Event
 
   def build_event(%{} = attrs \\ %{}, %{} = payload \\ %{}) do
     timestamp = DateTime.utc_now()

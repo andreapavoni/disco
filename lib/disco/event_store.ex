@@ -1,10 +1,15 @@
 defmodule Disco.EventStore do
   @moduledoc """
-  Documentation for Disco.EventStore.
+  The event store.
+
+  This module is responsible to manage events so that they can be persisted and then retrieved.
+
+  The actual implementation uses PostgreSQL and `Ecto.SQL` to store events. An adapter based
+  approach has been planned as one of the next planned features.
   """
 
-  alias Disco.Data.Event
-  alias Disco.Data.EventConsumer
+  alias Disco.EventStore.Data.Event
+  alias Disco.EventStore.Data.EventConsumer
   alias Disco.Repo
 
   @type event :: %{:type => binary(), optional(atom()) => any()}
@@ -38,7 +43,7 @@ defmodule Disco.EventStore do
 
   If offset is not present (nil), events will start from the beginning.
   """
-  @spec list_events_for_aggregate_id(binary()) :: [event]
+  @spec list_events_for_aggregate_id(aggregate_id :: binary()) :: [event]
   def list_events_for_aggregate_id(id) do
     id
     |> Event.with_aggregate_id()
@@ -46,6 +51,9 @@ defmodule Disco.EventStore do
     |> Enum.map(&event_to_map/1)
   end
 
+  @doc """
+  List events for a given set of event types.
+  """
   @spec list_events_with_types(event_types :: [binary()]) :: list()
   def list_events_with_types(types) do
     types
@@ -65,6 +73,11 @@ defmodule Disco.EventStore do
     end
   end
 
+  @doc """
+  Updates the offset of an event consumer.
+
+  This function is usually called after an event has been processed.
+  """
   @spec update_event_consumer_offset(consumer :: binary(), offset :: integer()) ::
           {:ok, integer()}
   def update_event_consumer_offset(consumer, offset) do
@@ -77,6 +90,12 @@ defmodule Disco.EventStore do
     {:ok, offset}
   end
 
+  @doc """
+  Reset the offset of a given event consumer.
+
+  Useful when you want a consumer to re-process all the events.
+  """
+  @spec reset_offsets_for_consumer(binary()) :: any()
   def reset_offsets_for_consumer(consumer) when is_binary(consumer) do
     EventConsumer
     |> EventConsumer.by_name(consumer)
@@ -89,7 +108,7 @@ defmodule Disco.EventStore do
     |> Repo.one()
   end
 
-  def event_to_map(%Event{} = event) do
+  defp event_to_map(%Event{} = event) do
     event |> Map.from_struct() |> Map.delete(:__meta__) |> Map.delete(:payload_json)
   end
 end
