@@ -40,20 +40,20 @@ end
 
 ## Usage
 
-Quick and dirty usage, to show how it's supposed to work.
+Quick and dirty console example, to show how it's supposed to work.
 
 ```
 $ iex -S mix
-# start Core process with the available aggregates
-iex(1)> Disco.start_link [MyApp.Wallet]
+# start Orchestrator process with the available aggregates
+iex> Disco.Orchestrator.start_link [MyApp.Wallet]
 {:ok, #PID<0.327.0>}
 
 # get available commands
-iex(2)> Disco.commands()
+iex> Disco.Orchestrator.commands()
 [:create_wallet]
 
 # execute a command (sync)
-iex(3)> Disco.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0})
+iex> Disco.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0})
 {:ok, %MyApp.Wallet.Aggregate{
   balance: 100.0,
   id: "4fd98a9e-8d6f-4e35-a8fc-aca5544596cb",
@@ -61,19 +61,19 @@ iex(3)> Disco.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0})
 }}
 
 # execute a command (async -> returns {:ok, aggregate_id})
-iex(4)> Disco.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0}, async: true)
+iex> Disco.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0}, async: true)
 {:ok, "ce998b0d-8d6f-4e35-a8fc-aca5544596cb"}
 
 # execute invalid command
-iex(5)> Disco.dispatch(:create_wallet, %{balance: 100.0})
+iex> Disco.Orchestrator.dispatch(:create_wallet, %{balance: 100.0})
 {:error, %{user_id: ["must be a valid UUID string"]}}
 
 # get available queries
-iex(6)> Disco.queries()
+iex> Disco.Orchestrator.queries()
 [:list_wallets]
 
 # list user wallets
-iex(7)> Disco.query(:list_wallets, %{user_id: "13bbece9-9bf3-4158-92b4-7e8a62d62361"})
+iex> Disco.Orchestrator.query(:list_wallets, %{user_id: "13bbece9-9bf3-4158-92b4-7e8a62d62361"})
 [%{
   balance: 100.0,
   id: "4fd98a9e-8d6f-4e35-a8fc-aca5544596cb",
@@ -81,18 +81,18 @@ iex(7)> Disco.query(:list_wallets, %{user_id: "13bbece9-9bf3-4158-92b4-7e8a62d62
 }]
 
 # execute invalid query
-iex(8)> Disco.query(:list_wallets, %{})
+iex> Disco.Orchestrator.query(:list_wallets, %{})
 {:error, %{user_id: ["must be a valid UUID string"]}}
 ```
 
 ## Documentation
 
-The docs aren't ready/published yet. They will be available at [https://hexdocs.pm/disco](https://hexdocs.pm/disco).
-Meanwhile you can check the source code and tests.
+The documentation is available at [https://hexdocs.pm/disco](https://hexdocs.pm/disco).
 
-## TODO
+## TODO / SHORT TERM ROADMAP
 
-* [ ] improve overall documentation
+* [x] improve overall documentation
+* [ ] consolidate Event to be a struct and/or protocol
 * [ ] consolidate API (mostly based on feedback, if any)
 * [ ] adopt an adapter-based approach for event store database
 * [ ] add example app
