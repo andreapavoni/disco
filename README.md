@@ -29,12 +29,10 @@ def deps do
 end
 ```
 
-2.  Ensure `disco` is started before your application:
+2.  Run setup to generate event store migrations:
 
-```elixir
-def application do
-  [applications: [:disco]]
-end
+```sh
+mix do deps.get, compile, disco.install
 ```
 
 ## Usage

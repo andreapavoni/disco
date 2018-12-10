@@ -1,0 +1,25 @@
+defmodule <%= module_prefix %>.Repo.Migrations.Disco.EventStore do
+  use Ecto.Migration
+
+  def change do
+    create table(:event_store, primary_key: false) do
+      add(:id, :uuid, primary_key: true)
+      add(:aggregate_id, :uuid, default: nil)
+      add(:offset, :serial, null: false)
+      add(:emitted_at, :utc_datetime, null: false)
+      add(:type, :string, null: false)
+      add(:payload, :binary)
+      add(:payload_json, :map)
+
+      timestamps()
+    end
+
+    create table(:event_consumers) do
+      add(:name, :string, null: false)
+      add(:offset, :integer, default: 0)
+    end
+
+    create(index(:event_consumers, [:name]))
+
+  end
+end
