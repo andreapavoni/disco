@@ -26,6 +26,7 @@ defmodule Disco.DataCase do
       import Ecto.Query
       import Disco.DataCase
       import Disco.Factory
+      import Disco.Testing
 
       alias Disco.EventStore.ClientMock, as: EventStoreClientMock
     end
