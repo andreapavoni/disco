@@ -6,11 +6,17 @@ defmodule Disco.Application do
   use Application
 
   def start(_type, _args) do
-    children = [
-      Disco.Repo
-    ]
+    children = child_apps(Mix.env())
 
     opts = [strategy: :one_for_one, name: Disco.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+  defp child_apps(:test) do
+    [
+      Disco.Repo
+    ]
+  end
+
+  defp child_apps(_), do: []
 end
