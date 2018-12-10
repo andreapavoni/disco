@@ -2,8 +2,6 @@
 
 Simple, opinionated yet flexible library to build CQRS/ES driven systems.
 
-## Status (2018-12-08)
-
 Disco has been extracted from work done to build apps following the CQRS/ES pattern.
 Several ideas come from other excellent examples such as [commanded](https://github.com/commanded/commanded).
 However, the goal was to build something simpler and more flexible, because it's not always
@@ -12,8 +10,9 @@ solve this gap.
 
 ### Production ready?
 
-Not yet. Well, this approach and code has been used to build several apps in production without problems,
-however before being really usable, it needs some polishing.
+Not yet. Well, this approach and code has been used to build several apps in production
+without problems, however before being really usable, it might need some polishing. Expect
+potential breaking changes until explicitly stated.
 
 ## Installation
 
@@ -93,9 +92,8 @@ The documentation is available at [https://hexdocs.pm/disco](https://hexdocs.pm/
 
 * [x] improve overall documentation
 * [ ] consolidate Event to be a struct and/or protocol
-* [ ] consolidate API (mostly based on feedback, if any)
+* [ ] consolidate API for aggregates or event consumer (mostly based on feedback, if any)
 * [ ] adopt an adapter-based approach for event store database
-* [ ] add example app
 
 ## Contributing
 
