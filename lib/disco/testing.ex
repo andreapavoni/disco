@@ -1,21 +1,16 @@
-defmodule Disco.Factory do
+defmodule Disco.Testing do
   @moduledoc """
-  Factories for EventStore app.
+  Testing helpers.
   """
-  use ExMachina.Ecto, repo: Disco.Repo
 
-  alias Disco.EventStore.Data.Event
-
-  def event_factory do
+  @doc """
+  Returns an event map to be used in tests.
+  """
+  @spec build_event(attrs :: map(), payload :: map) :: event :: map()
+  def build_event(%{} = attrs \\ %{}, %{} = payload \\ %{}) do
     timestamp = DateTime.utc_now()
 
-    payload = %{
-      user_id: UUID.uuid4(),
-      day: Date.utc_today(),
-      balance: 10.0
-    }
-
-    %Event{
+    %{
       id: UUID.uuid4(),
       type: "SomethingHappened",
       aggregate_id: UUID.uuid4(),
@@ -25,5 +20,6 @@ defmodule Disco.Factory do
       payload: payload,
       payload_json: payload
     }
+    |> Map.merge(attrs)
   end
 end

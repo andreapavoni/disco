@@ -1,8 +1,8 @@
 defmodule Disco.OrchestratorTest do
   use Disco.DataCase, async: false
 
-  alias Disco.Orchestrator
   alias Disco.Factories.ExampleAggregate, as: Aggregate
+  alias Disco.Orchestrator
 
   import Mox
   setup [:set_mox_global, :verify_on_exit!]
