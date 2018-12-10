@@ -9,7 +9,7 @@ config :logger, :console,
 
 config :disco, Disco.Repo,
   database: "disco_dev",
-  username: System.get_env("POSTGRES_USER"),
-  password: System.get_env("POSTGRES_PASSWORD"),
-  hostname: System.get_env("POSTGRES_HOSTNAME"),
+  username: System.get_env("DB_USER"),
+  password: System.get_env("DB_PASSWORD"),
+  hostname: System.get_env("DB_HOSTNAME") || "localhost",
   show_sensitive_data_on_connection_error: true

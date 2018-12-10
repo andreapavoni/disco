@@ -59,6 +59,9 @@ defmodule Disco.Aggregate do
   iex> Aggregate.query(:find_something, %{foo: "bar"})
   %{foo: "bar"}
   ```
+
+  # Umbrella apps
+  Check `Disco.Orchestrator`.
   """
 
   @typedoc """

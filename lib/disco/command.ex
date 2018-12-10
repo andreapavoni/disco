@@ -96,7 +96,7 @@ defmodule Disco.Command do
   Defines the struct fields and the default callbacks to implement the behaviour to run a command.
 
   ## Options
-  The only argument accepted is a Keyword list of fields for the command struct.
+  The only argument accepted is a `Keyword` list of fields for the command struct.
   """
   defmacro __using__(attrs) do
     quote do
@@ -149,12 +149,12 @@ defmodule Disco.Command do
     end)
   end
 
-  @spec build_event(binary(), map(), map()) :: map()
+  @spec build_event(type :: binary(), payload :: map(), state :: map()) :: event :: map()
   @doc """
   Builds an event map.
   """
-  def build_event(type, body, %{id: aggregate_id}) do
+  def build_event(type, payload, %{id: aggregate_id} = _state) do
     %{type: type, aggregate_id: aggregate_id}
-    |> Map.merge(body)
+    |> Map.merge(payload)
   end
 end

@@ -75,7 +75,10 @@ defmodule Disco.MixProject do
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
 
       # docs
-      {:ex_doc, "~> 0.19", only: [:dev], runtime: false}
+      case System.version() |> Version.match?("~> 1.7.0") do
+        true -> {:ex_doc, "~> 0.19", only: [:dev], runtime: false}
+        false -> {:ex_doc, "~> 0.18.0", only: :dev, runtime: false}
+      end
     ]
   end
 
