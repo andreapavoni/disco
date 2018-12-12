@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.Disco.Install do
+defmodule Mix.Tasks.Disco.GenerateEventStoreMigrations do
   @shortdoc "Generates Disco event store migration"
 
   @moduledoc """

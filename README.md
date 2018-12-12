@@ -10,15 +10,16 @@ solve this gap.
 
 ### Production ready?
 
-Not yet. Well, this approach and code has been used to build several apps in production
+Not yet. Well, this approach and part of its code has been used to build several apps in production
 without problems, however before being really usable, it might need some polishing. Expect
 potential breaking changes until explicitly stated.
 
-## Installation
+## Installation and setup
 
 The package is available in [Hex](https://hex.pm/packages/disco), follow these steps to install:
 
-1.  Add `disco` to your list of dependencies in `mix.exs`:
+1.  Add `disco` to your list of dependencies in `mix.exs` in your app (if it's part
+    of an umbrella project, add it where needed):
 
 ```elixir
 def deps do
@@ -29,11 +30,53 @@ def deps do
 end
 ```
 
-2.  Run setup to generate event store migrations:
+2.  Configure the event store **only on the app where you want to run it**. That means that
+    if you're working on an umbrella project, you have to choose an app in particular. The
+    best way is to have an app dedicated to work as event_store.
 
-```sh
-mix do deps.get, compile, disco.install
-```
+    * Generate migrations for the database
+
+    ```sh
+    mix do deps.get, compile, disco.generate_event_store_migrations
+    ```
+
+    * Configure event store repo
+
+    ```elixir
+    # config/config.exs
+
+    config :disco, otp_app: :my_app
+    config :my_app, ecto_repos: [Disco.Repo]
+
+    config :core, Disco.Repo,
+      dadatabase: "my_app_database",
+      username: System.get_env("POSTGRES_USER"),
+      password: System.get_env("POSTGRES_PASSWORD"),
+      hostname: System.get_env("POSTGRES_HOSTNAME")
+    ```
+
+3.  Configure the event store client to the app(s) that need to interact with the event store
+
+    * Configure the event store client
+
+    ```elixir
+    # config/config.exs
+
+    config :my_app, :event_store_client, MyApp.EventStoreClient
+    ```
+
+    * Create a wrapper for the event store client (so that it stays isolated)
+
+    ```elixir
+    defmodule MyApp.EventStoreClient do
+      use Disco.EventStore.Client
+    end
+    ```
+
+## Documentation
+
+The documentation is available at [https://hexdocs.pm/disco](https://hexdocs.pm/disco), it
+contains almost all the information needed to get started with Disco.
 
 ## Usage
 
@@ -61,6 +104,8 @@ iex> Disco.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balanc
 iex> Disco.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0}, async: true)
 {:ok, "ce998b0d-8d6f-4e35-a8fc-aca5544596cb"}
 
+# ... under the hood an event consumer, if any, will work on the emitted events from command
+
 # execute invalid command
 iex> Disco.Orchestrator.dispatch(:create_wallet, %{balance: 100.0})
 {:error, %{user_id: ["must be a valid UUID string"]}}
@@ -82,11 +127,7 @@ iex> Disco.Orchestrator.query(:list_wallets, %{})
 {:error, %{user_id: ["must be a valid UUID string"]}}
 ```
 
-## Documentation
-
-The documentation is available at [https://hexdocs.pm/disco](https://hexdocs.pm/disco).
-
-## TODO / SHORT TERM ROADMAP
+## TODO / Short term roadmap
 
 * [x] improve overall documentation
 * [ ] consolidate Event to be a struct and/or protocol
@@ -95,7 +136,7 @@ The documentation is available at [https://hexdocs.pm/disco](https://hexdocs.pm/
 
 ## Contributing
 
-Everyone is welcome to contribute to PlugEtsCache and help tackling existing issues!
+Everyone is welcome to contribute to Disco and help tackling existing issues!
 
 Use the [issue tracker](https://github.com/andreapavoni/disco/issues) for bug reports or feature requests.
 
