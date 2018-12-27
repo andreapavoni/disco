@@ -34,6 +34,7 @@ defmodule Disco.Orchestrator do
 
   ## Client API
 
+  @spec start_link(list()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link(modules) when is_list(modules) do
     GenServer.start_link(__MODULE__, %{modules: modules}, name: __MODULE__)
   end

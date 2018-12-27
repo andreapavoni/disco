@@ -4,7 +4,7 @@ defmodule Disco.Factory do
   """
   use ExMachina.Ecto, repo: Disco.Repo
 
-  alias Disco.EventStore.Data.Event
+  alias Disco.EventStore.Data.EventSchema
 
   def event_factory do
     timestamp = DateTime.utc_now()
@@ -15,7 +15,7 @@ defmodule Disco.Factory do
       balance: 10.0
     }
 
-    %Event{
+    %EventSchema{
       id: UUID.uuid4(),
       type: "SomethingHappened",
       aggregate_id: UUID.uuid4(),

@@ -30,8 +30,8 @@ defmodule Disco.AggregateTest do
 
     test "process/1 applies events to update aggregate state" do
       events = [
-        %{type: "FooHappened", aggregate_id: 1, foo: "bar"},
-        %{type: "FooHappened", aggregate_id: 1, foo: "baz"}
+        %Disco.Event{type: "FooHappened", aggregate_id: 1, payload: %{foo: "bar"}},
+        %Disco.Event{type: "FooHappened", aggregate_id: 1, payload: %{foo: "baz"}}
       ]
 
       state = %Aggregate{id: 1, foo: nil}
@@ -40,7 +40,11 @@ defmodule Disco.AggregateTest do
     end
 
     test "handle/2 runs a given command, emits the event(s) and returns updated state" do
-      expect(EventStoreClientMock, :emit, fn %{type: "FooHappened", aggregate_id: _, foo: "bar"} ->
+      expect(EventStoreClientMock, :emit, fn %Disco.Event{
+                                               type: "FooHappened",
+                                               aggregate_id: _,
+                                               payload: %{foo: "bar"}
+                                             } ->
         :ok
       end)
 
@@ -49,7 +53,7 @@ defmodule Disco.AggregateTest do
     end
 
     test "apply_event/1 applies an event to update aggregate state" do
-      event = %{type: "FooHappened", aggregate_id: 1, foo: "bar"}
+      event = %{type: "FooHappened", aggregate_id: 1, payload: %{foo: "bar"}}
       state = %Aggregate{id: 1, foo: nil}
 
       assert %Aggregate{id: 1, foo: "bar"} = Aggregate.apply_event(event, state)
@@ -57,7 +61,7 @@ defmodule Disco.AggregateTest do
 
     test "current_state/1 returns the current aggregate state" do
       expect(EventStoreClientMock, :load_aggregate_events, fn 1 ->
-        [%{type: "FooHappened", id: 1, aggregate_id: 1, foo: "bar"}]
+        [%Disco.Event{type: "FooHappened", id: 1, aggregate_id: 1, payload: %{foo: "bar"}}]
       end)
 
       assert %Aggregate{foo: "bar", id: 1} = Aggregate.current_state(1)
@@ -69,7 +73,11 @@ defmodule Disco.AggregateTest do
     end
 
     test "dispatch/2 executes a command to aggregate" do
-      expect(EventStoreClientMock, :emit, fn %{type: "FooHappened", aggregate_id: _, foo: "bar"} ->
+      expect(EventStoreClientMock, :emit, fn %{
+                                               type: "FooHappened",
+                                               aggregate_id: _,
+                                               payload: %{foo: "bar"}
+                                             } ->
         :ok
       end)
 

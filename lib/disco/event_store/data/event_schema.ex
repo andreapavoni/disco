@@ -1,12 +1,10 @@
-defmodule Disco.EventStore.Data.Event do
+defmodule Disco.EventStore.Data.EventSchema do
   @moduledoc false
 
   use Ecto.Schema
 
   import Ecto.Changeset
   import Ecto.Query
-
-  alias Ecto.UUID
 
   @type t :: %__MODULE__{}
   @type event :: %{:__struct__ => atom(), optional(atom()) => any()}
@@ -26,11 +24,9 @@ defmodule Disco.EventStore.Data.Event do
   @required_fields ~w(id type emitted_at)a
   @optional_fields ~w(payload payload_json aggregate_id)a
 
-  @spec changeset_event(event) :: Ecto.Changeset.t()
-  def changeset_event(%{} = map) do
-    event = build_event(map)
-
-    cast(%__MODULE__{}, event, @required_fields ++ @optional_fields)
+  @spec changeset_event(Disco.Event.t()) :: Ecto.Changeset.t()
+  def changeset_event(%Disco.Event{} = event) do
+    cast(%__MODULE__{}, Map.from_struct(event), @required_fields ++ @optional_fields)
   end
 
   @spec all :: Ecto.Query.t()
@@ -53,16 +49,5 @@ defmodule Disco.EventStore.Data.Event do
   @spec after_offset(__MODULE__ | Ecto.Query.t(), integer) :: Ecto.Query.t()
   def after_offset(events \\ __MODULE__, offset) do
     from(e in events, where: e.offset > ^offset, order_by: e.offset)
-  end
-
-  defp build_event(event) do
-    %{
-      "id" => UUID.generate(),
-      "aggregate_id" => event.aggregate_id,
-      "emitted_at" => DateTime.utc_now(),
-      "type" => event.type,
-      "payload" => event,
-      "payload_json" => event
-    }
   end
 end

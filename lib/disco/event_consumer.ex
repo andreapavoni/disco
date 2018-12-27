@@ -60,7 +60,7 @@ defmodule Disco.EventConsumer do
   @type error :: {:error, reason :: any}
   @type retry :: {:retry, reason :: any}
 
-  @callback process(event :: map()) :: :ok | {:ok, result :: any()} | error | retry
+  @callback process(Disco.Event.t()) :: :ok | {:ok, result :: any()} | error | retry
 
   @doc """
   Defines the default callbacks to implement the `Disco.EventConsumer` behaviour.

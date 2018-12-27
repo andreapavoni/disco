@@ -3,23 +3,16 @@ defmodule Disco.Testing do
   Testing helpers.
   """
 
+  alias Disco.Event
+
   @doc """
   Returns an event map to be used in tests.
   """
-  @spec build_event(attrs :: map(), payload :: map) :: event :: map()
+  @spec build_event(attrs :: map(), payload :: map) :: Disco.Event.t()
   def build_event(%{} = attrs \\ %{}, %{} = payload \\ %{}) do
-    timestamp = DateTime.utc_now()
+    payload = Map.merge(payload, attrs)
 
-    %{
-      id: UUID.uuid4(),
-      type: "SomethingHappened",
-      aggregate_id: UUID.uuid4(),
-      emitted_at: timestamp,
-      inserted_at: timestamp,
-      offset: nil,
-      payload: payload,
-      payload_json: payload
-    }
-    |> Map.merge(attrs)
+    "SomethingHappened"
+    |> Event.build(payload, %{id: UUID.uuid4()})
   end
 end

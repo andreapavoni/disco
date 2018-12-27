@@ -1,4 +1,4 @@
-defmodule Disco.EventStore.Data.EventConsumer do
+defmodule Disco.EventStore.Data.EventConsumerSchema do
   @moduledoc false
 
   use Ecto.Schema

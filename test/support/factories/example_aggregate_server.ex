@@ -1,9 +1,9 @@
-defmodule Disco.Factories.ExampleAggregate do
+defmodule Disco.Factories.ExampleAggregateServer do
   @moduledoc false
 
   defstruct id: nil, foo: nil
 
-  use Disco.Aggregate,
+  use Disco.AggregateServer,
     routes: %{
       commands: %{
         do_something: Disco.Factories.ExampleCommand
@@ -15,6 +15,6 @@ defmodule Disco.Factories.ExampleAggregate do
     event_store_client: Disco.EventStore.ClientMock
 
   def apply_event(%{type: "FooHappened"} = event, state) do
-    %{state | foo: event.payload.foo, id: event.aggregate_id}
+    %{state | foo: event.foo, id: event.aggregate_id}
   end
 end

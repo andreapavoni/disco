@@ -92,7 +92,7 @@ defmodule Disco.Aggregate do
   @doc """
   Called to apply an event to update the state.
   """
-  @callback apply_event(event :: map(), state()) :: state()
+  @callback apply_event(Disco.Event.t(), state()) :: state()
 
   @doc """
   Defines the default callbacks to implement the behaviour, the routes to commands and queries,
@@ -101,12 +101,13 @@ defmodule Disco.Aggregate do
   ## Options
     * `:routes` - a map with `:commands` and `:queries` as keys, and a map with
       `query_name: query_module` pairs, as value.
-    * `:event_store_client` - a module that implements `Disco.EventStore.Client` behaviour.
-
+    * `:event_store_client` (optional) - a module that implements `Disco.EventStore.Client` behaviour.
+      Defaults to the main `:event_store_client` config value.
   """
   defmacro __using__(opts \\ []) do
     routes = Keyword.get(opts, :routes)
-    event_store_client = Keyword.get(opts, :event_store_client)
+    main_event_store_client = Application.get_env(:disco, :event_store_client)
+    event_store_client = Keyword.get(opts, :event_store_client, main_event_store_client)
 
     quote bind_quoted: [routes: routes, event_store_client: event_store_client] do
       @behaviour Disco.Aggregate

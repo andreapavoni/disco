@@ -8,20 +8,20 @@ defmodule Disco.EventStore do
   approach has been planned as one of the next planned features.
   """
 
-  alias Disco.EventStore.Data.Event
-  alias Disco.EventStore.Data.EventConsumer
+  alias Disco.EventStore.Data.EventSchema
+  alias Disco.EventStore.Data.EventConsumerSchema
   alias Disco.Repo
 
-  @type event :: %{:type => binary(), optional(atom()) => any()}
+  @type event :: Disco.Event.t()
 
   @doc """
   Adds an event to the store.
   """
-  @spec emit(event) :: {:ok, result :: event}
-  def emit(%{type: _} = event) do
-    {:ok, emitted} = event |> Event.changeset_event() |> Repo.insert()
+  @spec emit(event) :: {:ok, event}
+  def emit(%Disco.Event{type: _} = event) do
+    {:ok, emitted} = event |> EventSchema.changeset_event() |> Repo.insert()
 
-    {:ok, event_to_map(emitted)}
+    {:ok, schema_to_event(emitted)}
   end
 
   @doc """
@@ -32,10 +32,10 @@ defmodule Disco.EventStore do
   @spec load_events_after_offset(events_listened :: [binary], offset :: integer()) :: [map()]
   def load_events_after_offset(events_listened, offset) do
     events_listened
-    |> Event.with_types()
-    |> Event.after_offset(offset)
+    |> EventSchema.with_types()
+    |> EventSchema.after_offset(offset)
     |> Repo.all()
-    |> Enum.map(&event_to_map/1)
+    |> Enum.map(&schema_to_event/1)
   end
 
   @doc """
@@ -46,9 +46,9 @@ defmodule Disco.EventStore do
   @spec list_events_for_aggregate_id(aggregate_id :: binary()) :: [event]
   def list_events_for_aggregate_id(id) do
     id
-    |> Event.with_aggregate_id()
+    |> EventSchema.with_aggregate_id()
     |> Repo.all()
-    |> Enum.map(&event_to_map/1)
+    |> Enum.map(&schema_to_event/1)
   end
 
   @doc """
@@ -57,9 +57,9 @@ defmodule Disco.EventStore do
   @spec list_events_with_types(event_types :: [binary()]) :: list()
   def list_events_with_types(types) do
     types
-    |> Event.with_types()
+    |> EventSchema.with_types()
     |> Repo.all()
-    |> Enum.map(&event_to_map/1)
+    |> Enum.map(&schema_to_event/1)
   end
 
   @doc """
@@ -84,7 +84,7 @@ defmodule Disco.EventStore do
     {:ok, _} =
       consumer
       |> get_event_consumer_by_name()
-      |> EventConsumer.update_offset_changeset(consumer, offset)
+      |> EventConsumerSchema.update_offset_changeset(consumer, offset)
       |> Repo.insert_or_update()
 
     {:ok, offset}
@@ -97,18 +97,26 @@ defmodule Disco.EventStore do
   """
   @spec reset_offsets_for_consumer(binary()) :: any()
   def reset_offsets_for_consumer(consumer) when is_binary(consumer) do
-    EventConsumer
-    |> EventConsumer.by_name(consumer)
+    EventConsumerSchema
+    |> EventConsumerSchema.by_name(consumer)
     |> Repo.delete_all()
   end
 
   defp get_event_consumer_by_name(name) do
-    EventConsumer
-    |> EventConsumer.by_name(name)
+    EventConsumerSchema
+    |> EventConsumerSchema.by_name(name)
     |> Repo.one()
   end
 
-  defp event_to_map(%Event{} = event) do
-    event |> Map.from_struct() |> Map.delete(:__meta__) |> Map.delete(:payload_json)
+  defp schema_to_event(%EventSchema{} = event) do
+    map =
+      event
+      |> Map.from_struct()
+      |> Map.delete(:__meta__)
+      |> Map.delete(:inserted_at)
+      |> Map.delete(:updated_at)
+      |> Map.delete(:offset)
+
+    struct(Disco.Event, map)
   end
 end

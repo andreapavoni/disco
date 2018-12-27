@@ -2,6 +2,7 @@ defmodule Disco.CommandTest do
   use Disco.DataCase, async: false
 
   alias Disco.Factories.ExampleCommand, as: Command
+  alias Disco.Event
 
   describe "command behaviour when used by a module:" do
     test "new/1 initializes a new command from a map" do
@@ -18,14 +19,16 @@ defmodule Disco.CommandTest do
       cmd = %Command{foo: "bar"}
       state = %{id: "123", foo: "baz"}
 
-      assert [%{aggregate_id: "123", foo: "bar", type: "FooHappened"}] = Command.run(cmd, state)
+      assert [%Event{aggregate_id: "123", type: "FooHappened", payload: %{foo: "bar"}}] =
+               Command.run(cmd, state)
     end
 
     test "execute/2 inits, validates and runs a command all at once" do
       attrs = %{"foo" => "bar"}
       state = %{id: "123", foo: "baz"}
 
-      assert [%{aggregate_id: _, foo: "bar", type: "FooHappened"}] = Command.execute(attrs, state)
+      assert [%Event{aggregate_id: _, type: "FooHappened", payload: %{foo: "bar"}}] =
+               Command.execute(attrs, state)
     end
   end
 end

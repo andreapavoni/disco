@@ -85,7 +85,7 @@ defmodule Disco.Command do
   @doc """
   Called to run the command.
   """
-  @callback run(command :: map() | error, state :: map()) :: [event :: map()] | error
+  @callback run(command :: map() | error, state :: map()) :: [Disco.Event.t()] | error
 
   @doc """
   Called to init, validate and run the command all at once.
@@ -149,12 +149,11 @@ defmodule Disco.Command do
     end)
   end
 
-  @spec build_event(type :: binary(), payload :: map(), state :: map()) :: event :: map()
+  @spec build_event(type :: binary(), payload :: map(), state :: map()) :: Disco.Event.t()
   @doc """
   Builds an event map.
   """
-  def build_event(type, payload, %{id: aggregate_id} = _state) do
-    %{type: type, aggregate_id: aggregate_id}
-    |> Map.merge(payload)
+  def build_event(type, payload, %{id: aggregate_id} = state) do
+    Disco.Event.build(type, payload, state)
   end
 end

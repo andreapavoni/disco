@@ -18,7 +18,7 @@ defmodule Disco.EventStore.Client do
   @doc """
   Called to emit an event to the event store.
   """
-  @callback emit(map()) :: {:ok, event :: map()} | {:error, reason :: any()}
+  @callback emit(Disco.Event.t()) :: {:ok, Disco.Event.t()} | {:error, reason :: any()}
 
   @doc """
   Called to load events for a given aggregate id from event store.
@@ -55,8 +55,8 @@ defmodule Disco.EventStore.Client do
       @doc """
       Emits an event.
       """
-      @spec emit(event :: map()) :: {:ok, event :: map()}
-      def emit(%{} = event), do: EventStore.emit(event)
+      @spec emit(Disco.Event.t()) :: {:ok, Disco.Event.t()}
+      def emit(%Disco.Event{} = event), do: EventStore.emit(event)
 
       @doc """
       Loads events for a given aggregate id.
