@@ -61,7 +61,7 @@ defmodule Disco.Aggregate do
   ```
 
   # Umbrella apps
-  Check `Disco.Orchestrator`.
+  Check `Disco.Aggregate.Orchestrator`.
   """
 
   defmacro __using__(opts \\ []) do
@@ -72,37 +72,36 @@ defmodule Disco.Aggregate do
     quote bind_quoted: [routes: routes, event_store_client: event_store_client] do
       use DynamicSupervisor
 
-      alias Disco.AggregateWorker
+      alias Disco.Aggregate.Worker
 
       @routes routes
       @event_store_client event_store_client
 
       ## Client API
 
-      def start_link() do
+      def start_link(_ \\ nil) do
         DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
       end
 
       @doc """
-      Returns a map of available commands.
+      Returns a map of available commands and queries.
       """
       @spec routes() :: %{commands: map(), queries: map()}
-      def routes do
-        Map.merge(%{commands: %{}, queries: %{}}, @routes)
-      end
+      def routes, do: @routes
 
       @doc """
       Executes command on the aggregate if available. It runs sync.
       """
-      @spec dispatch(command :: atom(), params :: map()) :: :ok | {:ok, map()} | {:error, any()}
-      def dispatch(command, params) do
+      @spec dispatch(command :: atom(), params :: map(), opts :: list()) ::
+              :ok | {:ok, map()} | {:error, any()}
+      def dispatch(command, params, opts \\ []) do
         # TODO: add support for async calls like Disco.dispatch
         with {:ok, cmd} <- init_command(command, params) do
           aggregate_id = Map.get(cmd, :id, UUID.uuid4())
 
           {:ok, pid} = spawn_aggregate(aggregate_id)
 
-          AggregateWorker.handle(cmd, pid)
+          Worker.handle(cmd, pid)
 
           {:ok, aggregate_id}
         else
@@ -125,7 +124,7 @@ defmodule Disco.Aggregate do
 
       @spec spawn_aggregate(binary()) :: {:ok, pid() | {:error, any()}}
       def spawn_aggregate(aggregate_id) do
-        child_spec = {AggregateWorker, %__MODULE__{id: aggregate_id}}
+        child_spec = {Worker, %__MODULE__{id: aggregate_id}}
         {:ok, pid} = DynamicSupervisor.start_child(__MODULE__, child_spec)
       end
 

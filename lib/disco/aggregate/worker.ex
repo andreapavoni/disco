@@ -1,4 +1,4 @@
-defmodule Disco.AggregateWorker do
+defmodule Disco.Aggregate.Worker do
   @moduledoc """
   Disco aggregate worker.
   """
@@ -7,24 +7,27 @@ defmodule Disco.AggregateWorker do
 
   ## Client API
 
-  def start_link(%_{id: nil} = aggregate_module),
-    do: start_link(%{aggregate_module | id: UUID.uuid4()})
+  @spec start_link(%{__struct__: atom(), id: nil | binary()}) ::
+          :ignore | {:error, any()} | {:ok, pid()}
+  def start_link(%_{id: nil} = aggregate_module) do
+    start_link(%{aggregate_module | id: UUID.uuid4()})
+  end
 
   def start_link(%aggregate_name{id: id} = aggregate_module) when is_binary(id) do
     GenServer.start_link(__MODULE__, aggregate_module, name: {:global, "#{aggregate_name}:#{id}"})
   end
 
+  @spec process([Disco.Event.t()], pid()) :: any()
   def process(events, pid) do
     # TODO: should be a cast?
     GenServer.call(pid, {:process, events})
   end
 
+  @spec handle(atom(), pid()) :: any()
   def handle(command, pid) do
     # TODO: might be call OR cast
     GenServer.call(pid, {:handle_command, command})
   end
-
-  ## Server callbacks
 
   def child_spec(aggregate) do
     %{
@@ -36,7 +39,10 @@ defmodule Disco.AggregateWorker do
     }
   end
 
+  ## Server callbacks
+
   @impl true
+  @spec init(%{__struct__: atom(), id: binary() | nil}) :: {:ok, %{__struct__: atom(), id: any()}}
   def init(%_{id: id} = state) do
     Process.send(self(), {:load_current_state, id}, [])
 

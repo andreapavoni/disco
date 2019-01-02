@@ -20,7 +20,7 @@ defmodule Disco do
   `Disco.Query` to retrieve data from some source of data, ideally the one where you wrote
   using a `Disco.EventConsumer` event processor.
 
-  `Disco.Orchestrator` acts like the `Disco.Aggregate` in terms of commands and queries
+  `Disco.Aggregate.Orchestrator` acts like the `Disco.Aggregate` in terms of commands and queries
   functionalities, except that it groups multiple aggregates under the same module. It
   comes particularly useful when dealing with several aggregates. For example, working on
   an umbrella project might need a central point where to handle all the commands and queries.

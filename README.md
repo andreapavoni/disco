@@ -85,15 +85,15 @@ Quick and dirty console example, to show how it's supposed to work.
 ```
 $ iex -S mix
 # start Orchestrator process with the available aggregates
-iex> Disco.Orchestrator.start_link [MyApp.Wallet]
+iex> Disco.Aggregate.Orchestrator.start_link [MyApp.Wallet]
 {:ok, #PID<0.327.0>}
 
-# get available commands
-iex> Disco.Orchestrator.commands()
-[:create_wallet]
+# get available commands and queries
+iex> Disco.Aggregate.Orchestrator.routes()
+%{commands: [:create_wallet], queries: [:list_wallets]}
 
 # execute a command (sync)
-iex> Disco.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0})
+iex> Disco.Aggregate.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0})
 {:ok, %MyApp.Wallet.Aggregate{
   balance: 100.0,
   id: "4fd98a9e-8d6f-4e35-a8fc-aca5544596cb",
@@ -101,21 +101,17 @@ iex> Disco.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balanc
 }}
 
 # execute a command (async -> returns {:ok, aggregate_id})
-iex> Disco.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0}, async: true)
+iex> Disco.Aggregate.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0}, async: true)
 {:ok, "ce998b0d-8d6f-4e35-a8fc-aca5544596cb"}
 
 # ... under the hood an event consumer, if any, will work on the emitted events from command
 
 # execute invalid command
-iex> Disco.Orchestrator.dispatch(:create_wallet, %{balance: 100.0})
+iex> Disco.Aggregate.Orchestrator.dispatch(:create_wallet, %{balance: 100.0})
 {:error, %{user_id: ["must be a valid UUID string"]}}
 
-# get available queries
-iex> Disco.Orchestrator.queries()
-[:list_wallets]
-
 # list user wallets
-iex> Disco.Orchestrator.query(:list_wallets, %{user_id: "13bbece9-9bf3-4158-92b4-7e8a62d62361"})
+iex> Disco.Aggregate.Orchestrator.query(:list_wallets, %{user_id: "13bbece9-9bf3-4158-92b4-7e8a62d62361"})
 [%{
   balance: 100.0,
   id: "4fd98a9e-8d6f-4e35-a8fc-aca5544596cb",
@@ -123,14 +119,14 @@ iex> Disco.Orchestrator.query(:list_wallets, %{user_id: "13bbece9-9bf3-4158-92b4
 }]
 
 # execute invalid query
-iex> Disco.Orchestrator.query(:list_wallets, %{})
+iex> Disco.Aggregate.Orchestrator.query(:list_wallets, %{})
 {:error, %{user_id: ["must be a valid UUID string"]}}
 ```
 
 ## TODO / Short term roadmap
 
 * [x] improve overall documentation
-* [ ] consolidate Event to be a struct and/or protocol
+* [x] consolidate Event to be a struct and/or protocol
 * [ ] consolidate API for aggregates or event consumer (mostly based on feedback, if any)
 * [ ] adopt an adapter-based approach for event store database
 

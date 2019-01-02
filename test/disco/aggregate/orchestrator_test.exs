@@ -1,23 +1,15 @@
-defmodule Disco.OrchestratorTest do
+defmodule Disco.Aggregate.OrchestratorTest do
   use Disco.DataCase, async: false
 
   alias Disco.Factories.ExampleAggregate, as: Aggregate
-  alias Disco.Orchestrator
+  alias Disco.Aggregate.Orchestrator
 
   import Mox
   setup [:set_mox_global, :verify_on_exit!]
 
   setup do
-    {:ok, _pid} = Orchestrator.start_link([Disco.Factories.ExampleAggregate])
+    {:ok, _pid} = Orchestrator.start_link([Aggregate])
     :ok
-  end
-
-  test "commands/0" do
-    assert Orchestrator.commands() == [:do_something]
-  end
-
-  test "queries/0" do
-    assert Orchestrator.queries() == [:find_something]
   end
 
   describe "dispatch/2" do
@@ -30,6 +22,9 @@ defmodule Disco.OrchestratorTest do
     end
 
     test "executes command async" do
+      expect(EventStoreClientMock, :emit, fn _ -> :ok end)
+      expect(EventStoreClientMock, :load_aggregate_events, fn _ -> [] end)
+
       assert {:ok, id} = Orchestrator.dispatch(:do_something, %{foo: "bar"}, async: true)
       assert {:ok, _} = UUID.info(id)
     end
@@ -37,5 +32,11 @@ defmodule Disco.OrchestratorTest do
 
   test "query/2 executes query and returns data" do
     assert Orchestrator.query(:find_something, %{foo: "bar"}) == %{foo: "bar"}
+  end
+
+  test "routes/0 returns available routes for the aggregates" do
+    routes = %{commands: [:do_something], queries: [:find_something]}
+
+    assert ^routes = Orchestrator.routes()
   end
 end
