@@ -28,10 +28,20 @@ defmodule Disco.Aggregate.OrchestratorTest do
       assert {:ok, id} = Orchestrator.dispatch(:do_something, %{foo: "bar"}, async: true)
       assert {:ok, _} = UUID.info(id)
     end
+
+    test "test returns error when command route is not found" do
+      {:error, "unknown command"} = assert Orchestrator.dispatch(:wrong_command, %{foo: "bar"})
+    end
   end
 
-  test "query/2 executes query and returns data" do
-    assert Orchestrator.query(:find_something, %{foo: "bar"}) == %{foo: "bar"}
+  describe "query/2" do
+    test "executes query and returns data" do
+      assert Orchestrator.query(:find_something, %{foo: "bar"}) == %{foo: "bar"}
+    end
+
+    test "test returns error when query route is not found" do
+      {:error, "unknown query"} = assert Orchestrator.query(:wrong_query, %{foo: "bar"})
+    end
   end
 
   test "routes/0 returns available routes for the aggregates" do

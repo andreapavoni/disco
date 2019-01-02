@@ -9,9 +9,6 @@ defmodule Disco.Aggregate.Worker do
 
   @spec start_link(%{__struct__: atom(), id: nil | binary()}) ::
           :ignore | {:error, any()} | {:ok, pid()}
-  def start_link(%_{id: nil} = aggregate_module) do
-    start_link(%{aggregate_module | id: UUID.uuid4()})
-  end
 
   def start_link(%aggregate_name{id: id} = aggregate_module) when is_binary(id) do
     GenServer.start_link(__MODULE__, aggregate_module, name: {:global, "#{aggregate_name}:#{id}"})
@@ -33,7 +30,6 @@ defmodule Disco.Aggregate.Worker do
     %{
       id: __MODULE__,
       start: {__MODULE__, :start_link, [aggregate]},
-      shutdown: 600_000,
       restart: :transient,
       type: :worker
     }
@@ -45,6 +41,7 @@ defmodule Disco.Aggregate.Worker do
   @spec init(%{__struct__: atom(), id: binary() | nil}) :: {:ok, %{__struct__: atom(), id: any()}}
   def init(%_{id: id} = state) do
     Process.send(self(), {:load_current_state, id}, [])
+    Process.flag(:trap_exit, true)
 
     {:ok, state}
   end
@@ -56,6 +53,10 @@ defmodule Disco.Aggregate.Worker do
       |> aggregate_module.load_aggregate_events()
       |> do_process(state)
 
+    {:noreply, state}
+  end
+
+  def handle_info({:EXIT, _pid, :normal}, state) do
     {:noreply, state}
   end
 
@@ -77,6 +78,9 @@ defmodule Disco.Aggregate.Worker do
 
     {:reply, events, new_state}
   end
+
+  @impl true
+  def terminate(_reason, _state), do: :normal
 
   defp do_process(events, %aggregate_module{} = state) do
     {:ok, Enum.reduce(events, state, &aggregate_module.apply_event(&1, &2))}

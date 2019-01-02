@@ -122,14 +122,8 @@ defmodule Disco.Aggregate do
         end
       end
 
-      @spec spawn_aggregate(binary()) :: {:ok, pid() | {:error, any()}}
-      def spawn_aggregate(aggregate_id) do
-        child_spec = {Worker, %__MODULE__{id: aggregate_id}}
-        {:ok, pid} = DynamicSupervisor.start_child(__MODULE__, child_spec)
-      end
-
-      def kill_aggregate(pid) do
-        DynamicSupervisor.terminate_child(__MODULE__, pid)
+      def aggregates() do
+        DynamicSupervisor.which_children(__MODULE__)
       end
 
       ## Server callbacks
@@ -149,7 +143,19 @@ defmodule Disco.Aggregate do
         :ok
       end
 
-      ## Private functions
+      ## Private helpers
+
+      defp spawn_aggregate(aggregate_id) do
+        child_spec = {Worker, %__MODULE__{id: aggregate_id}}
+
+        case DynamicSupervisor.start_child(__MODULE__, child_spec) do
+          {:ok, pid} -> {:ok, pid}
+          {:error, {:already_started, pid}} -> {:ok, pid}
+          {:error, _} = error -> error
+        end
+
+        # {:error, {:already_started, #PID<0.369.0>}}
+      end
 
       defp init_command(command, params) do
         with cmd_module when not is_nil(cmd_module) <- routes()[:commands][command],
