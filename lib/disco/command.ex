@@ -153,7 +153,7 @@ defmodule Disco.Command do
   @doc """
   Builds an event map.
   """
-  def build_event(type, payload, %{id: aggregate_id} = state) do
+  def build_event(type, payload, %{id: _aggregate_id} = state) do
     Disco.Event.build(type, payload, state)
   end
 end

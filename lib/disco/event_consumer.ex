@@ -130,10 +130,10 @@ defmodule Disco.EventConsumer do
         offset =
           case process(event) do
             :ok ->
-              event.offset
+              event.meta.offset
 
             {:ok, _} ->
-              event.offset
+              event.meta.offset
 
             # something bad happened but we can retry later
             {:retry, _reason} ->
@@ -141,7 +141,7 @@ defmodule Disco.EventConsumer do
 
             # something bad happened and retry is not going to work
             {:error, _reason} ->
-              event.offset
+              event.meta.offset
           end
 
         {:ok, new_offset} = @event_store.update_consumer_offset(consumer, offset)

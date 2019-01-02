@@ -1,92 +1,40 @@
 defmodule Disco.AggregateTest do
-  use Disco.DataCase, async: false
+  use Disco.DataCase, async: true
 
   alias Disco.Factories.ExampleAggregate, as: Aggregate
+  alias Disco.EventStore.ClientMock, as: EventStoreClientMock
   alias Disco.Factories.ExampleCommand, as: Command
   alias Disco.Factories.ExampleQuery, as: Query
 
   import Mox
-  setup :verify_on_exit!
+  setup [:set_mox_global, :verify_on_exit!]
 
-  describe "aggregate behaviour when used by a module:" do
-    test "commit/1 commits events to event store" do
-      expect(EventStoreClientMock, :emit, 2, fn %{type: "FooHappened", aggregate_id: _, foo: _} ->
-        :ok
-      end)
+  describe "dispatch/2" do
+    test "executes command and applies event to aggregate state" do
+      {:ok, _pid} = Aggregate.start_link()
 
-      events = [
-        %{type: "FooHappened", aggregate_id: 1, foo: "bar"},
-        %{type: "FooHappened", aggregate_id: 2, foo: "baz"}
-      ]
+      expect(EventStoreClientMock, :load_aggregate_events, 1, fn _ -> [] end)
+      expect(EventStoreClientMock, :emit, 1, fn _ -> {:ok, %{}} end)
 
-      assert :ok = Aggregate.commit(events)
+      assert {:ok, aggregate_id} = Aggregate.dispatch(:do_something, %{foo: "bar"})
+      assert {:ok, _} = UUID.info(aggregate_id)
     end
+  end
 
-    test "commit/1 doesn't commit empty events to event store" do
-      expect(EventStoreClientMock, :emit, 0, fn _ -> :ok end)
+  test "query/2 executes query and returns data" do
+    assert Aggregate.query(:find_something, %{foo: "bar"}) == %{foo: "bar"}
+  end
 
-      assert :ok = Aggregate.commit([])
-    end
+  test "apply_event/1 applies an event to update aggregate state" do
+    event = %{type: "FooHappened", aggregate_id: 1, payload: %{foo: "bar"}}
+    state = %Aggregate{id: 1, foo: nil}
 
-    test "process/1 applies events to update aggregate state" do
-      events = [
-        %Disco.Event{type: "FooHappened", aggregate_id: 1, payload: %{foo: "bar"}},
-        %Disco.Event{type: "FooHappened", aggregate_id: 1, payload: %{foo: "baz"}}
-      ]
+    assert %Aggregate{id: 1, foo: "bar"} = Aggregate.apply_event(event, state)
+  end
 
-      state = %Aggregate{id: 1, foo: nil}
+  test "routes/0 returns available routes for the aggregate" do
+    routes = %{commands: %{do_something: Command}, queries: %{find_something: Query}}
 
-      assert {:ok, %Aggregate{id: 1, foo: "baz"}} = Aggregate.process(events, state)
-    end
-
-    test "handle/2 runs a given command, emits the event(s) and returns updated state" do
-      expect(EventStoreClientMock, :emit, fn %Disco.Event{
-                                               type: "FooHappened",
-                                               aggregate_id: _,
-                                               payload: %{foo: "bar"}
-                                             } ->
-        :ok
-      end)
-
-      assert {:ok, %Aggregate{id: id, foo: "bar"}} = Aggregate.handle(%Command{foo: "bar"})
-      refute is_nil(id)
-    end
-
-    test "apply_event/1 applies an event to update aggregate state" do
-      event = %{type: "FooHappened", aggregate_id: 1, payload: %{foo: "bar"}}
-      state = %Aggregate{id: 1, foo: nil}
-
-      assert %Aggregate{id: 1, foo: "bar"} = Aggregate.apply_event(event, state)
-    end
-
-    test "current_state/1 returns the current aggregate state" do
-      expect(EventStoreClientMock, :load_aggregate_events, fn 1 ->
-        [%Disco.Event{type: "FooHappened", id: 1, aggregate_id: 1, payload: %{foo: "bar"}}]
-      end)
-
-      assert %Aggregate{foo: "bar", id: 1} = Aggregate.current_state(1)
-    end
-
-    test "routes/0 returns available routes for the aggregate" do
-      routes = %{commands: %{do_something: Command}, queries: %{find_something: Query}}
-      assert ^routes = Aggregate.routes()
-    end
-
-    test "dispatch/2 executes a command to aggregate" do
-      expect(EventStoreClientMock, :emit, fn %{
-                                               type: "FooHappened",
-                                               aggregate_id: _,
-                                               payload: %{foo: "bar"}
-                                             } ->
-        :ok
-      end)
-
-      assert {:ok, %Aggregate{foo: "bar", id: _}} =
-               Aggregate.dispatch(:do_something, %{foo: "bar"})
-    end
-
-    test "query/2 executes a query to aggregate" do
-      assert Aggregate.query(:find_something, %{foo: "bar"}) == %{foo: "bar"}
-    end
+    assert ^routes = Aggregate.routes()
   end
 end

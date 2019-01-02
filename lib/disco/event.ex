@@ -10,7 +10,8 @@ defmodule Disco.Event do
             emitted_at: nil,
             type: nil,
             payload: %{},
-            payload_json: %{}
+            payload_json: %{},
+            meta: %{}
 
   @spec build(binary(), map(), %{id: binary()}) :: Disco.Event.t()
   def build(type, payload, %{id: aggregate_id} = _state) do

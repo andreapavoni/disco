@@ -64,56 +64,24 @@ defmodule Disco.Aggregate do
   Check `Disco.Orchestrator`.
   """
 
-  @typedoc """
-  Represents the state of an aggregate.
-  """
-  @type state :: map()
-
-  @doc """
-  Called to get the current aggregate state.
-  """
-  @callback current_state(id :: any()) :: state()
-
-  @doc """
-  Called to send emitted events to `Disco.EventStore`.
-  """
-  @callback commit(events :: list()) :: :ok
-
-  @doc """
-  Called to process a list events to update the state.
-  """
-  @callback process(events :: list(), state()) :: {:ok, state()}
-
-  @doc """
-  Called to run a given command and to emit the event(s). Returns updated state.
-  """
-  @callback handle(command :: map(), aggregate_id :: binary() | nil) :: {:ok, state()}
-
-  @doc """
-  Called to apply an event to update the state.
-  """
-  @callback apply_event(Disco.Event.t(), state()) :: state()
-
-  @doc """
-  Defines the default callbacks to implement the behaviour, the routes to commands and queries,
-  sets the client to communicate with the `Disco.EventStore`.
-
-  ## Options
-    * `:routes` - a map with `:commands` and `:queries` as keys, and a map with
-      `query_name: query_module` pairs, as value.
-    * `:event_store_client` (optional) - a module that implements `Disco.EventStore.Client` behaviour.
-      Defaults to the main `:event_store_client` config value.
-  """
   defmacro __using__(opts \\ []) do
     routes = Keyword.get(opts, :routes)
     main_event_store_client = Application.get_env(:disco, :event_store_client)
     event_store_client = Keyword.get(opts, :event_store_client, main_event_store_client)
 
     quote bind_quoted: [routes: routes, event_store_client: event_store_client] do
-      @behaviour Disco.Aggregate
+      use DynamicSupervisor
+
+      alias Disco.AggregateWorker
 
       @routes routes
       @event_store_client event_store_client
+
+      ## Client API
+
+      def start_link() do
+        DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
+      end
 
       @doc """
       Returns a map of available commands.
@@ -123,53 +91,22 @@ defmodule Disco.Aggregate do
         Map.merge(%{commands: %{}, queries: %{}}, @routes)
       end
 
-      def current_state(id \\ nil)
-      def current_state(nil), do: %__MODULE__{id: UUID.uuid4()}
-
-      def current_state(id) do
-        events = @event_store_client.load_aggregate_events(id)
-        {:ok, state} = process(events, %__MODULE__{id: id})
-        state
-      end
-
-      def handle(%module{} = cmd, aggregate_id \\ nil) do
-        state = current_state(aggregate_id)
-
-        # run cmd and get events
-        events = module.run(cmd, state)
-
-        # process events on the current state
-        {:ok, new_state} = process(events, state)
-
-        # commit events to event store
-        commit(events)
-
-        {:ok, new_state}
-      end
-
-      def commit(events) do
-        Enum.each(events, &@event_store_client.emit/1)
-        :ok
-      end
-
-      def process(events, %cmd_module{} = state) do
-        new_state = Enum.reduce(events, state, &cmd_module.apply_event(&1, &2))
-
-        {:ok, new_state}
-      end
-
       @doc """
       Executes command on the aggregate if available. It runs sync.
       """
-      @spec dispatch(command :: atom(), params :: map()) :: {:ok, map()} | {:error, any()}
+      @spec dispatch(command :: atom(), params :: map()) :: :ok | {:ok, map()} | {:error, any()}
       def dispatch(command, params) do
         # TODO: add support for async calls like Disco.dispatch
-        with cmd_module when not is_nil(cmd_module) <- routes()[:commands][command],
-             {:ok, cmd} <- params |> cmd_module.new() |> cmd_module.validate() do
-          __MODULE__.handle(cmd)
+        with {:ok, cmd} <- init_command(command, params) do
+          aggregate_id = Map.get(cmd, :id, UUID.uuid4())
+
+          {:ok, pid} = spawn_aggregate(aggregate_id)
+
+          AggregateWorker.handle(cmd, pid)
+
+          {:ok, aggregate_id}
         else
-          nil -> {:error, "unknown command"}
-          {:error, _} = error -> error
+          error -> error
         end
       end
 
@@ -186,7 +123,44 @@ defmodule Disco.Aggregate do
         end
       end
 
-      defoverridable current_state: 1, handle: 1, process: 2, commit: 1
+      @spec spawn_aggregate(binary()) :: {:ok, pid() | {:error, any()}}
+      def spawn_aggregate(aggregate_id) do
+        child_spec = {AggregateWorker, %__MODULE__{id: aggregate_id}}
+        {:ok, pid} = DynamicSupervisor.start_child(__MODULE__, child_spec)
+      end
+
+      def kill_aggregate(pid) do
+        DynamicSupervisor.terminate_child(__MODULE__, pid)
+      end
+
+      ## Server callbacks
+
+      def init(:ok) do
+        DynamicSupervisor.init(strategy: :one_for_one)
+      end
+
+      ## Helpers (callbacks?)
+
+      def load_aggregate_events(id) do
+        @event_store_client.load_aggregate_events(id)
+      end
+
+      def commit(events) do
+        Enum.each(events, &@event_store_client.emit/1)
+        :ok
+      end
+
+      ## Private functions
+
+      defp init_command(command, params) do
+        with cmd_module when not is_nil(cmd_module) <- routes()[:commands][command],
+             {:ok, cmd} <- params |> cmd_module.new() |> cmd_module.validate() do
+          {:ok, cmd}
+        else
+          nil -> {:error, "unknown command"}
+          {:error, _} = error -> error
+        end
+      end
     end
   end
 end

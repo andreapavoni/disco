@@ -17,7 +17,7 @@ defmodule Disco.EventStore do
   @doc """
   Adds an event to the store.
   """
-  @spec emit(event) :: {:ok, event}
+  @spec emit(Disco.Event.t()) :: {:ok, Disco.Event.t()}
   def emit(%Disco.Event{type: _} = event) do
     {:ok, emitted} = event |> EventSchema.changeset_event() |> Repo.insert()
 
@@ -115,6 +115,7 @@ defmodule Disco.EventStore do
       |> Map.delete(:__meta__)
       |> Map.delete(:inserted_at)
       |> Map.delete(:updated_at)
+      |> Map.put(:meta, %{offset: event.offset})
       |> Map.delete(:offset)
 
     struct(Disco.Event, map)

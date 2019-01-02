@@ -31,14 +31,6 @@ defmodule Disco.MixProject do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
-  def application do
-    [
-      extra_applications: [:logger, :runtime_tools],
-      mod: {Disco.Application, []}
-    ]
-  end
-
   defp description() do
     "Simple, opinionated library to build CQRS/ES driven systems."
   end

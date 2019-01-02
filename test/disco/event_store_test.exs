@@ -2,6 +2,7 @@ defmodule Disco.EventStoreTest do
   use Disco.DataCase, async: false
 
   alias Disco.EventStore
+  alias Disco.Event
 
   describe "emit/1" do
     test "raises error when event misses 'type' attribute" do
@@ -27,10 +28,9 @@ defmodule Disco.EventStoreTest do
       assert emitted.payload.baz == event.payload.baz
     end
 
-    # TODO: move this test elsewhere, maybe when testing for ecto adapter
-    # test "sets offset bigger than 0" do
-    #   assert {:ok, event} = EventStore.emit(build_event())
-    #   assert event.offset > 0
-    # end
+    test "sets offset bigger than 0" do
+      assert {:ok, %Event{} = event} = EventStore.emit(build_event())
+      assert event.meta.offset > 0
+    end
   end
 end
