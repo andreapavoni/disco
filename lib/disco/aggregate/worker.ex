@@ -62,7 +62,8 @@ defmodule Disco.Aggregate.Worker do
 
   @impl true
   def handle_call({:process, events}, _from, state) do
-    do_process(events, state)
+    {:ok, new_state} = do_process(events, state)
+    {:reply, new_state, new_state}
   end
 
   @impl true

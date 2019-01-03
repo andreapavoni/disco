@@ -122,6 +122,9 @@ defmodule Disco.Aggregate do
         end
       end
 
+      @doc """
+      Returns a list of active aggregates.
+      """
       def aggregates() do
         DynamicSupervisor.which_children(__MODULE__)
       end
@@ -134,10 +137,16 @@ defmodule Disco.Aggregate do
 
       ## Helpers (callbacks?)
 
+      @doc """
+      Loads events for a given aggregate id.
+      """
       def load_aggregate_events(id) do
         @event_store_client.load_aggregate_events(id)
       end
 
+      @doc """
+      Commits events to the event store.
+      """
       def commit(events) do
         Enum.each(events, &@event_store_client.emit/1)
         :ok
