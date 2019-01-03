@@ -125,7 +125,7 @@ defmodule Disco.Aggregate do
       @doc """
       Returns a list of active aggregates.
       """
-      def aggregates() do
+      def aggregates do
         DynamicSupervisor.which_children(__MODULE__)
       end
 

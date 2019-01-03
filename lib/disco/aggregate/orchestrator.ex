@@ -40,7 +40,7 @@ defmodule Disco.Aggregate.Orchestrator do
   @doc """
   Returns a map of available commands and queries lists.
   """
-  def routes() do
+  def routes do
     GenServer.call(__MODULE__, :routes)
   end
 

@@ -1,8 +1,8 @@
 defmodule Disco.EventStoreTest do
   use Disco.DataCase, async: false
 
-  alias Disco.EventStore
   alias Disco.Event
+  alias Disco.EventStore
 
   describe "emit/1" do
     test "raises error when event misses 'type' attribute" do

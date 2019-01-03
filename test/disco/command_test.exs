@@ -1,8 +1,8 @@
 defmodule Disco.CommandTest do
   use Disco.DataCase, async: false
 
-  alias Disco.Factories.ExampleCommand, as: Command
   alias Disco.Event
+  alias Disco.Factories.ExampleCommand, as: Command
 
   describe "command behaviour when used by a module:" do
     test "new/1 initializes a new command from a map" do

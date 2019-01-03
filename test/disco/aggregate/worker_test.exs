@@ -1,10 +1,10 @@
 defmodule Disco.Aggregate.WorkerTest do
   use Disco.DataCase, async: false
 
-  alias Disco.Factories.ExampleAggregate, as: Aggregate
-  alias Disco.Factories.ExampleCommand, as: Command
   alias Disco.Aggregate.Worker
   alias Disco.Event
+  alias Disco.Factories.ExampleAggregate, as: Aggregate
+  alias Disco.Factories.ExampleCommand, as: Command
 
   import Mox
   setup [:set_mox_global, :verify_on_exit!]

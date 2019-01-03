@@ -8,8 +8,8 @@ defmodule Disco.EventStore do
   approach has been planned as one of the next planned features.
   """
 
-  alias Disco.EventStore.Data.EventSchema
   alias Disco.EventStore.Data.EventConsumerSchema
+  alias Disco.EventStore.Data.EventSchema
   alias Disco.Repo
 
   @type event :: Disco.Event.t()

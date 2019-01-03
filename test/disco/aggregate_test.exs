@@ -1,8 +1,8 @@
 defmodule Disco.AggregateTest do
   use Disco.DataCase, async: true
 
-  alias Disco.Factories.ExampleAggregate, as: Aggregate
   alias Disco.EventStore.ClientMock, as: EventStoreClientMock
+  alias Disco.Factories.ExampleAggregate, as: Aggregate
   alias Disco.Factories.ExampleCommand, as: Command
   alias Disco.Factories.ExampleQuery, as: Query
 
