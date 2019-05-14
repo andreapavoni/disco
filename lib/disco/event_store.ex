@@ -2,10 +2,10 @@ defmodule Disco.EventStore do
   @moduledoc """
   The event store.
 
-  This module is responsible to manage events so that they can be persisted and then retrieved.
+  This module is responsible to manage events so that they can be persisted or retrieved.
 
   The actual implementation uses PostgreSQL and `Ecto.SQL` to store events. An adapter based
-  approach has been planned as one of the next planned features.
+  approach has been planned as one of the next features.
   """
 
   alias Disco.EventStore.Data.Event
