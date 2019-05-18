@@ -27,8 +27,8 @@ defmodule Disco.EventConsumer do
   through a `Disco.EventStore.Client` at given intervals.
 
   Polling the `Disco.EventStore` is a very simple solution that offers more guarantees
-  for consuming all the events without leaving somothing behind. By default, polling interval
-  is set to `2000` ms, however it's possible to set a different values globally orper-consumer.
+  for consuming all the events without leaving something behind. By default, polling interval
+  is set to `2000` ms, however it's possible to set a different values globally or per-consumer.
   Here's how to do it:
 
   ```
@@ -125,7 +125,6 @@ defmodule Disco.EventConsumer do
 
       defp do_process(consumer, event, current_offset) do
         # TODO: handle exceptions
-        # TODO: handle when we cannot update the offset
         # TODO: handle dead letters when we cannot retry
         offset =
           case process(event) do
@@ -137,10 +136,17 @@ defmodule Disco.EventConsumer do
 
             # something bad happened but we can retry later
             {:retry, _reason} ->
+              Logger.info("#{consumer}: event #{event.type} with id #{event.id} needs retry")
               current_offset
 
             # something bad happened and retry is not going to work
-            {:error, _reason} ->
+            {:error, reason} ->
+              Logger.info(
+                "#{consumer}: event #{event.type} with id #{event.id} failed with reason: #{
+                  inspect(reason)
+                }"
+              )
+
               event.offset
           end
 
