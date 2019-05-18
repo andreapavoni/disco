@@ -5,12 +5,9 @@ defmodule Disco.Factories.ExampleCommand do
 
   validates(:foo, presence: true)
 
-  def run(%__MODULE__{} = command, state) do
-    body =
-      command
-      |> Map.from_struct()
-      |> Map.put(:aggregate_id, state.id)
+  def run(%__MODULE__{} = command) do
+    command |> Map.from_struct()
 
-    [build_event("FooHappened", body, state)]
+    :ok
   end
 end

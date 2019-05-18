@@ -15,6 +15,8 @@ defmodule Disco.Utils do
       iex> opts = [except: [:baz]]
       iex> Disco.Utils.map_reject_nil_values(%{foo: "bar", baz: nil}, opts)
       %{foo: "bar", baz: nil}
+      iex> Disco.Utils.map_reject_nil_values(%Disco.Factories.ExampleCommand{foo: 123})
+      %{foo: 123}
 
   """
   @spec map_reject_nil_values(data :: map(), opts :: Keyword.t()) :: map()

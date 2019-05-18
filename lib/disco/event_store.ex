@@ -39,19 +39,6 @@ defmodule Disco.EventStore do
   end
 
   @doc """
-  List events for a given aggregate id.
-
-  If offset is not present (nil), events will start from the beginning.
-  """
-  @spec list_events_for_aggregate_id(aggregate_id :: binary()) :: [event]
-  def list_events_for_aggregate_id(id) do
-    id
-    |> Event.with_aggregate_id()
-    |> Repo.all()
-    |> Enum.map(&event_to_map/1)
-  end
-
-  @doc """
   List events for a given set of event types.
   """
   @spec list_events_with_types(event_types :: [binary()]) :: list()

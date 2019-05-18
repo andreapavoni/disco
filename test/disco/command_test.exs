@@ -14,18 +14,21 @@ defmodule Disco.CommandTest do
       assert {:error, %{foo: ["must be present"]}} = Command.validate(%Command{})
     end
 
-    test "run/2 runs the command with given state" do
+    test "run/2 runs the command" do
       cmd = %Command{foo: "bar"}
-      state = %{id: "123", foo: "baz"}
 
-      assert [%{aggregate_id: "123", foo: "bar", type: "FooHappened"}] = Command.run(cmd, state)
+      assert :ok = Command.run(cmd)
     end
 
     test "execute/2 inits, validates and runs a command all at once" do
       attrs = %{"foo" => "bar"}
-      state = %{id: "123", foo: "baz"}
 
-      assert [%{aggregate_id: _, foo: "bar", type: "FooHappened"}] = Command.execute(attrs, state)
+      assert :ok = Command.execute(attrs)
     end
+  end
+
+  describe "build_event/2" do
+    assert %{type: "SomethingHappened", foo: "foo", bar: "bar"} ==
+             Disco.Command.build_event("SomethingHappened", %{foo: "foo", bar: "bar"})
   end
 end

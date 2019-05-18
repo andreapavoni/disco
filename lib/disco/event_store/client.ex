@@ -21,11 +21,6 @@ defmodule Disco.EventStore.Client do
   @callback emit(map()) :: {:ok, event :: map()} | {:error, reason :: any()}
 
   @doc """
-  Called to load events for a given aggregate id from event store.
-  """
-  @callback load_aggregate_events(id :: any()) :: list()
-
-  @doc """
   Called to load emitted events that need to be consumed.
   """
   @callback load_events_with_types(event_types :: [binary()]) :: list()
@@ -57,12 +52,6 @@ defmodule Disco.EventStore.Client do
       """
       @spec emit(event :: map()) :: {:ok, event :: map()}
       def emit(%{} = event), do: EventStore.emit(event)
-
-      @doc """
-      Loads events for a given aggregate id.
-      """
-      @spec load_aggregate_events(id :: any()) :: list()
-      def load_aggregate_events(id), do: EventStore.list_events_for_aggregate_id(id)
 
       @doc """
       Loads events with given types.

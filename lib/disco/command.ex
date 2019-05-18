@@ -15,8 +15,9 @@ defmodule Disco.Command do
   defmodule MyApp.DoSomething do
     use Disco.Command
 
-    def run(%__MODULE__{} = _command, state) do
-      [%{type: "SomethingDone", ...}]
+    def run(%__MODULE__{} = _command) do
+      # do something
+      :ok # or {:ok, result} | {:error, something}
     end
   end
   ```
@@ -26,7 +27,7 @@ defmodule Disco.Command do
   defmodule MyApp.DoSomethingWithParams do
     use Disco.Command, foo: nil
 
-    def run(%__MODULE__{} = command, state), do
+    def run(%__MODULE__{} = command), do
       [%{type: "SomethingDone", ...}]
     end
   end
@@ -40,8 +41,9 @@ defmodule Disco.Command do
     # param `foo` is required, `bar` isn't.
     validates(:foo, presence: true)
 
-    def run(%__MODULE__{} = command, state), do
-      [%{type: "SomethingDone", aggregate_id: "123",...}]
+    def run(%__MODULE__{} = command), do
+      # do something
+      :ok # or {:ok, result} or {:error, something}
     end
   end
   ```
@@ -66,7 +68,7 @@ defmodule Disco.Command do
   iex> Cmd.new() |> Cmd.validate()
   {:error, %{foo: ["must be present"]}}
   iex> Cmd.run(%Cmd{foo: "bar"})
-  [%{type: "FooHappened", aggregate_id: _, foo: "bar"}]
+  :ok
   ```
   """
 
@@ -85,7 +87,7 @@ defmodule Disco.Command do
   @doc """
   Called to run the command.
   """
-  @callback run(command :: map() | error, state :: map()) :: [event :: map()] | error
+  @callback run(command :: map() | error) :: :ok | {:ok, any()} | {:error, any()}
 
   @doc """
   Called to init, validate and run the command all at once.
@@ -128,11 +130,11 @@ defmodule Disco.Command do
       @doc """
       Inits, validates and runs the command all at once.
       """
-      @spec execute(attrs :: map(), state :: map()) :: any()
-      def execute(attrs, %{} = state \\ %{}) do
+      @spec execute(attrs :: map()) :: any()
+      def execute(attrs) do
         with %__MODULE__{} = cmd_struct <- new(attrs),
              {:ok, cmd} <- validate(cmd_struct) do
-          run(cmd, state)
+          run(cmd)
         else
           {:error, _errors} = error -> error
         end
@@ -149,12 +151,12 @@ defmodule Disco.Command do
     end)
   end
 
-  @spec build_event(type :: binary(), payload :: map(), state :: map()) :: event :: map()
+  @spec build_event(type :: binary(), payload :: map()) :: event :: map()
   @doc """
   Builds an event map.
   """
-  def build_event(type, payload, %{id: aggregate_id} = _state) do
-    %{type: type, aggregate_id: aggregate_id}
+  def build_event(type, payload) do
+    %{type: type}
     |> Map.merge(payload)
   end
 end

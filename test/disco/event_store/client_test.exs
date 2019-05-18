@@ -13,13 +13,6 @@ defmodule Disco.EventStore.ClientTest do
       refute is_nil(event.emitted_at)
     end
 
-    test "load_aggregate_events/1 loads events for a given aggregate id from event store" do
-      event = insert(:event)
-
-      assert [loaded] = Client.load_aggregate_events(event.aggregate_id)
-      assert loaded.id == event.id
-    end
-
     test "load_events_with_types/1 loads events with given types" do
       %{id: event_id, type: type} = insert(:event)
 

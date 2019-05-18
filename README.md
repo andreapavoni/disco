@@ -100,10 +100,6 @@ iex> Disco.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balanc
   user_id: "13bbece9-9bf3-4158-92b4-7e8a62d62361"
 }}
 
-# execute a command (async -> returns {:ok, aggregate_id})
-iex> Disco.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0}, async: true)
-{:ok, "ce998b0d-8d6f-4e35-a8fc-aca5544596cb"}
-
 # ... under the hood an event consumer, if any, will work on the emitted events from command
 
 # execute invalid command

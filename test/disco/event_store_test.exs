@@ -15,7 +15,7 @@ defmodule Disco.EventStoreTest do
 
       assert {:ok, emitted} = EventStore.emit(event)
       assert emitted.type == event.type
-      assert %{type: _, aggregate_id: _} = emitted.payload
+      assert %{type: _} = emitted.payload
     end
 
     test "stores an event correctly with payload" do

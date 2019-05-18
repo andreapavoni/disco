@@ -13,7 +13,6 @@ defmodule Disco.Testing do
     %{
       id: UUID.uuid4(),
       type: "SomethingHappened",
-      aggregate_id: UUID.uuid4(),
       emitted_at: timestamp,
       inserted_at: timestamp,
       offset: nil,
