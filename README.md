@@ -1,12 +1,9 @@
 # Disco
 
-Simple, opinionated yet flexible library to build CQRS/ES driven systems.
-
-Disco has been extracted from work done to build apps following the CQRS/ES pattern.
-Several ideas come from other excellent examples such as [commanded](https://github.com/commanded/commanded).
-However, the goal was to build something simpler and more flexible, because it's not always
-possible to follow 100% CQRS/ES pattern neither anywhere in your apps. Disco tries to
-solve this gap.
+Minimal, opinionated yet flexible library to build software based on commands,
+queries and events. Not a stricly a CQRS/ES in the known terms, because it's
+not always possible to follow 100% CQRS/ES pattern neither anywhere in your
+apps. Disco tries to solve this gap.
 
 ### Production ready?
 
@@ -82,52 +79,10 @@ contains almost all the information needed to get started with Disco.
 
 Quick and dirty console example, to show how it's supposed to work.
 
-```
-$ iex -S mix
-# start Orchestrator process with the available aggregates
-iex> Disco.Orchestrator.start_link [MyApp.Wallet]
-{:ok, #PID<0.327.0>}
-
-# get available commands
-iex> Disco.Orchestrator.commands()
-[:create_wallet]
-
-# execute a command (sync)
-iex> Disco.Orchestrator.dispatch(:create_wallet, %{user_id: UUID.uuid4(), balance: 100.0})
-{:ok, %MyApp.Wallet.Aggregate{
-  balance: 100.0,
-  id: "4fd98a9e-8d6f-4e35-a8fc-aca5544596cb",
-  user_id: "13bbece9-9bf3-4158-92b4-7e8a62d62361"
-}}
-
-# ... under the hood an event consumer, if any, will work on the emitted events from command
-
-# execute invalid command
-iex> Disco.Orchestrator.dispatch(:create_wallet, %{balance: 100.0})
-{:error, %{user_id: ["must be a valid UUID string"]}}
-
-# get available queries
-iex> Disco.Orchestrator.queries()
-[:list_wallets]
-
-# list user wallets
-iex> Disco.Orchestrator.query(:list_wallets, %{user_id: "13bbece9-9bf3-4158-92b4-7e8a62d62361"})
-[%{
-  balance: 100.0,
-  id: "4fd98a9e-8d6f-4e35-a8fc-aca5544596cb",
-  user_id: "13bbece9-9bf3-4158-92b4-7e8a62d62361"
-}]
-
-# execute invalid query
-iex> Disco.Orchestrator.query(:list_wallets, %{})
-{:error, %{user_id: ["must be a valid UUID string"]}}
-```
-
 ## TODO / Short term roadmap
 
 * [x] improve overall documentation
 * [ ] consolidate Event to be a struct and/or protocol
-* [ ] consolidate API for aggregates or event consumer (mostly based on feedback, if any)
 * [ ] adopt an adapter-based approach for event store database
 
 ## Contributing

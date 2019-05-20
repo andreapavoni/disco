@@ -14,16 +14,10 @@ defmodule Disco do
 
   `Disco` is mainly composed by the following pieces:
 
-  `Disco.Aggregate` is the main interface to interact with an aggregate. It exposes the
-  necessary functionalities to dispatch a `Disco.Command` that emits a set of events and
-  process them to update the aggregate state. Later, the aggregate can be used to run a
-  `Disco.Query` to retrieve data from some source of data, ideally the one where you wrote
-  using a `Disco.EventConsumer` event processor.
+  `Disco.Command` exposes the necessary functionalities to write a state and
+  emit events if necessary.
 
-  `Disco.Orchestrator` acts like the `Disco.Aggregate` in terms of commands and queries
-  functionalities, except that it groups multiple aggregates under the same module. It
-  comes particularly useful when dealing with several aggregates. For example, working on
-  an umbrella project might need a central point where to handle all the commands and queries.
+  `Disco.Query` exposes the necessary functionalities to read data from a state.
 
   `Disco.EventStore` is responsible to persist and retrieve emitted events. To interact with
   it, a `Disco.EventStore.Client` is used, so that everything is isolated from exposing
@@ -31,8 +25,8 @@ defmodule Disco do
 
   `Disco.EventConsumer` is used to retrieve and process events, even from different apps.
 
-  Each component follows the relative behaviour and implements a default for as many callbacks
-  as possible, to hopefully cover the most common use cases. Check the documentation of
-  each component for details.
+  Each component defines a proper behaviour and implements as many default callbacks as
+  possible, to hopefully cover the most common use cases. Check the documentation
+  of each component for details.
   """
 end

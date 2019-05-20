@@ -68,7 +68,7 @@ defmodule Disco.Command do
   iex> Cmd.new() |> Cmd.validate()
   {:error, %{foo: ["must be present"]}}
   iex> Cmd.run(%Cmd{foo: "bar"})
-  :ok
+  :ok # or {:ok, some_result}
   ```
   """
 

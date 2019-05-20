@@ -60,7 +60,7 @@ defmodule Disco.Query do
   iex> Query.new() |> Query.validate()
   {:error, %{foo: ["must be present"]}}
   iex> Query.run(%Query{foo: "bar"})
-  %{foo: "bar"}
+  ... some result ...
   ```
   """
 
