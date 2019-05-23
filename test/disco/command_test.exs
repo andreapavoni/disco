@@ -26,9 +26,4 @@ defmodule Disco.CommandTest do
       assert :ok = Command.execute(attrs)
     end
   end
-
-  describe "build_event/2" do
-    assert %{type: "SomethingHappened", foo: "foo", bar: "bar"} ==
-             Disco.Command.build_event("SomethingHappened", %{foo: "foo", bar: "bar"})
-  end
 end

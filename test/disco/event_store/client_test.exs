@@ -7,7 +7,8 @@ defmodule Disco.EventStore.ClientTest do
 
   describe "event store client behaviour when used by a module:" do
     test "emit/1 emits an event to the event store" do
-      assert {:ok, event} = Client.emit(build_event())
+      %{type: type, payload: payload} = build_event()
+      assert {:ok, event} = Client.emit(type, payload)
 
       refute is_nil(event.id)
       refute is_nil(event.emitted_at)
@@ -30,5 +31,10 @@ defmodule Disco.EventStore.ClientTest do
     test "update_consumer_offset/2 updates consumer current offset" do
       assert {:ok, 1} = Client.update_consumer_offset("SomeConsumer", 1)
     end
+  end
+
+  describe "build_event/2" do
+    assert %{type: "SomethingHappened", payload: %{foo: "foo", bar: "bar"}} ==
+             Disco.EventStore.Client.build_event("SomethingHappened", %{foo: "foo", bar: "bar"})
   end
 end

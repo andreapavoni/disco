@@ -150,13 +150,4 @@ defmodule Disco.Command do
       Map.put(acc, key, [msg])
     end)
   end
-
-  @spec build_event(type :: binary(), payload :: map()) :: event :: map()
-  @doc """
-  Builds an event map.
-  """
-  def build_event(type, payload) do
-    %{type: type}
-    |> Map.merge(payload)
-  end
 end

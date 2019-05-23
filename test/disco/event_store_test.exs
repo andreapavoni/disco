@@ -15,16 +15,16 @@ defmodule Disco.EventStoreTest do
 
       assert {:ok, emitted} = EventStore.emit(event)
       assert emitted.type == event.type
-      assert %{type: _} = emitted.payload
+      assert %{type: _} = emitted
     end
 
     test "stores an event correctly with payload" do
-      event = build_event(%{foo: 10.0, bar: Date.utc_today(), baz: "hello"})
+      event = build_event(%{}, %{foo: 10.0, bar: Date.utc_today(), baz: "hello"})
 
       assert {:ok, emitted} = EventStore.emit(event)
-      assert emitted.payload.foo == event.foo
-      assert emitted.payload.bar == event.bar
-      assert emitted.payload.baz == event.baz
+      assert emitted.payload.foo == event.payload.foo
+      assert emitted.payload.bar == event.payload.bar
+      assert emitted.payload.baz == event.payload.baz
     end
 
     test "sets offset bigger than 0" do

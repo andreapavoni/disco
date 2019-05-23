@@ -18,7 +18,8 @@ defmodule Disco.EventStore.Client do
   @doc """
   Called to emit an event to the event store.
   """
-  @callback emit(map()) :: {:ok, event :: map()} | {:error, reason :: any()}
+  @callback emit(type :: binary(), payload :: map()) ::
+              {:ok, event :: map()} | {:error, reason :: any()}
 
   @doc """
   Called to load emitted events that need to be consumed.
@@ -50,8 +51,8 @@ defmodule Disco.EventStore.Client do
       @doc """
       Emits an event.
       """
-      @spec emit(event :: map()) :: {:ok, event :: map()}
-      def emit(%{} = event), do: EventStore.emit(event)
+      @spec emit(type :: binary, payload :: map()) :: {:ok, event :: map()}
+      def emit(type, %{} = payload), do: Client.build_event(type, payload) |> EventStore.emit()
 
       @doc """
       Loads events with given types.
@@ -81,5 +82,13 @@ defmodule Disco.EventStore.Client do
         EventStore.load_events_after_offset(events_listened, offset)
       end
     end
+  end
+
+  @doc """
+  Builds an event map.
+  """
+  @spec build_event(type :: binary(), payload :: map()) :: event :: map()
+  def build_event(type, payload) do
+    %{type: type, payload: Disco.EventPayloadEncoder.encode(payload)}
   end
 end

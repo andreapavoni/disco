@@ -47,8 +47,8 @@ defmodule Disco.EventStore.Data.Event do
       "id" => UUID.generate(),
       "emitted_at" => DateTime.utc_now(),
       "type" => event.type,
-      "payload" => event,
-      "payload_json" => event
+      "payload" => event.payload,
+      "payload_json" => event.payload
     }
   end
 end
