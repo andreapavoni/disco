@@ -11,6 +11,7 @@ defmodule Disco.EventStore.Data.Event do
   @type t :: %__MODULE__{}
   @type event :: %{:__struct__ => atom(), optional(atom()) => any()}
 
+  @derive {Disco.EventPayloadEncoder, only: [:id, :offset, :emitted_at, :type, :payload]}
   @primary_key {:id, :binary_id, autogenerate: false}
   schema "event_store" do
     field(:offset, :integer)

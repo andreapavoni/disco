@@ -21,7 +21,7 @@ defmodule Disco.EventStore do
   def emit(%{type: _} = event) do
     {:ok, emitted} = event |> Event.changeset_event() |> Repo.insert()
 
-    {:ok, event_to_map(emitted)}
+    {:ok,     Disco.EventPayloadEncoder.encode(emitted) }
   end
 
   @doc """
@@ -35,7 +35,7 @@ defmodule Disco.EventStore do
     |> Event.with_types()
     |> Event.after_offset(offset)
     |> Repo.all()
-    |> Enum.map(&event_to_map/1)
+    |> Enum.map(&Disco.EventPayloadEncoder.encode/1)
   end
 
   @doc """
@@ -46,7 +46,7 @@ defmodule Disco.EventStore do
     types
     |> Event.with_types()
     |> Repo.all()
-    |> Enum.map(&event_to_map/1)
+    |> Enum.map(&Disco.EventPayloadEncoder.encode/1)
   end
 
   @doc """
@@ -93,9 +93,5 @@ defmodule Disco.EventStore do
     EventConsumer
     |> EventConsumer.by_name(name)
     |> Repo.one()
-  end
-
-  defp event_to_map(%Event{} = event) do
-    event |> Map.from_struct() |> Map.delete(:__meta__) |> Map.delete(:payload_json)
   end
 end
